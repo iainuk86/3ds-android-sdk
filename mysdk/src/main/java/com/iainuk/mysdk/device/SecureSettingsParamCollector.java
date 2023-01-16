@@ -45,12 +45,8 @@ final class SecureSettingsParamCollector extends ParamCollector {
     }
 
     private static void addA065(ParamAccumulator accumulator, ContentResolver resolver) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A065",
-                    Settings.Secure.getString(resolver, ACCESSIBILITY_DISPLAY_INVERSION_ENABLED));
-        } else {
-            accumulator.addToUnavailableParams("A065", RE04);
-        }
+        accumulator.addToDeviceData("A065",
+                Settings.Secure.getString(resolver, ACCESSIBILITY_DISPLAY_INVERSION_ENABLED));
     }
 
     private static void addA066(ParamAccumulator accumulator, ContentResolver resolver) {
@@ -135,12 +131,8 @@ final class SecureSettingsParamCollector extends ParamCollector {
     }
 
     private static void addA078(ParamAccumulator accumulator, ContentResolver resolver) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A078",
-                    Settings.Secure.getString(resolver, SKIP_FIRST_USE_HINTS));
-        } else {
-            accumulator.addToUnavailableParams("A078", RE04);
-        }
+        accumulator.addToDeviceData("A078",
+                Settings.Secure.getString(resolver, SKIP_FIRST_USE_HINTS));
     }
 
     private static void addA079(ParamAccumulator accumulator) {

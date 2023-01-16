@@ -343,11 +343,6 @@ final class TelephonyParamCollector extends ParamCollector {
     }
 
     private static void addA024(ParamAccumulator accumulator, TelephonyManager telephonyManager) {
-        if (Build.VERSION.SDK_INT < 21) {
-            accumulator.addToUnavailableParams("A024", RE04);
-            return;
-        }
-
         try {
             accumulator.addToDeviceData("A024", String.valueOf(telephonyManager.isSmsCapable()));
         } catch (Exception e) {

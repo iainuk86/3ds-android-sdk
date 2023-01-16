@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 final class PackageParamCollector extends ParamCollector {
@@ -39,7 +38,9 @@ final class PackageParamCollector extends ParamCollector {
 
         List<String> installedAppNames = new ArrayList<>();
         for (ApplicationInfo appInfo : installedApps) {
-            installedAppNames.add(appInfo.packageName);
+            if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) != ApplicationInfo.FLAG_SYSTEM) {
+                installedAppNames.add(appInfo.packageName);
+            }
         }
 
         accumulator.addToDeviceData("A125", String.join(",", installedAppNames));
@@ -62,11 +63,11 @@ final class PackageParamCollector extends ParamCollector {
 
     private static void addA127(ParamAccumulator accumulator, PackageManager packageManager) {
         accumulator.addToDeviceData("A127",
-                Arrays.toString(packageManager.getSystemAvailableFeatures()));
+                String.valueOf(packageManager.getSystemAvailableFeatures().length));
     }
 
     private static void addA128(ParamAccumulator accumulator, PackageManager packageManager) {
         accumulator.addToDeviceData("A128",
-                Arrays.toString(packageManager.getSystemSharedLibraryNames()));
+                String.valueOf(packageManager.getSystemSharedLibraryNames().length));
     }
 }
