@@ -92,19 +92,11 @@ final class BuildParamCollector extends ParamCollector {
     }
 
     private static void addA054(ParamAccumulator accumulator) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A054", Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
-        } else {
-            accumulator.addToUnavailableParams("A054", RE04);
-        }
+        accumulator.addToDeviceData("A054", Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
     }
 
     private static void addA055(ParamAccumulator accumulator) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A055", Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
-        } else {
-            accumulator.addToUnavailableParams("A055", RE04);
-        }
+        accumulator.addToDeviceData("A055", Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
     }
 
     private static void addA056(ParamAccumulator accumulator) {

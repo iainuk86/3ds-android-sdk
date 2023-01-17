@@ -1,6 +1,8 @@
 package com.iainuk.mysdk.device;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static com.iainuk.mysdk.device.DPNAEnum.RE03;
 import static com.iainuk.mysdk.device.DPNAEnum.RE04;
@@ -14,15 +16,18 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 
+import java.util.List;
+
 final class WifiParamCollector extends ParamCollector {
     static void addWifiManagerFields(ParamAccumulator accumulator) {
         WifiManager wifiManager = (WifiManager) accumulator.getContext()
                 .getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
-        // Permission ACCESS_NETWORK_STATE needed for API level 31 and above to get WifiInfo
-        boolean canAccessNetworkState = hasWifiInfoPermissions(accumulator);
-        WifiInfo wifiInfo = getWifiInfo(accumulator, wifiManager, canAccessNetworkState);
-        addWifiInfoParams(accumulator, wifiInfo, canAccessNetworkState);
+        // To obtain WifiInfo, ACCESS_NETWORK_STATE is needed for API level 31 and above
+        // For level 30 and under, ACCESS_WIFI_STATE is needed
+        boolean hasWifiInfoPermissions = hasWifiInfoPermissions(accumulator);
+        WifiInfo wifiInfo = getWifiInfo(accumulator, wifiManager, hasWifiInfoPermissions);
+        addWifiInfoParams(accumulator, wifiInfo, hasWifiInfoPermissions);
 
         addA032(accumulator, wifiManager);
         addA033(accumulator, wifiManager);
@@ -35,19 +40,19 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addWifiInfoParams(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                          boolean canAccessNetworkState) {
-        addA028(accumulator, wifiInfo, canAccessNetworkState);
-        addA029(accumulator, wifiInfo, canAccessNetworkState);
-        addA030(accumulator, wifiInfo, canAccessNetworkState);
-        addA031(accumulator, wifiInfo, canAccessNetworkState);
-        addA147(accumulator, wifiInfo, canAccessNetworkState);
-        addA148(accumulator, wifiInfo, canAccessNetworkState);
+                                          boolean hasWifiInfoPermissions) {
+        addA028(accumulator, wifiInfo, hasWifiInfoPermissions);
+        addA029(accumulator, wifiInfo, hasWifiInfoPermissions);
+        addA030(accumulator, wifiInfo, hasWifiInfoPermissions);
+        addA031(accumulator, wifiInfo, hasWifiInfoPermissions);
+        addA147(accumulator, wifiInfo, hasWifiInfoPermissions);
+        addA148(accumulator, wifiInfo, hasWifiInfoPermissions);
     }
 
     @SuppressLint({"HardwareIds", "MissingPermission"})
     private static void addA028(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A028", RE03);
             return;
         }
@@ -61,8 +66,8 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA029(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A029", RE03);
             return;
         }
@@ -75,8 +80,8 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA030(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A030", RE03);
             return;
         }
@@ -89,8 +94,8 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA031(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A031", RE03);
             return;
         }
@@ -103,18 +108,12 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA032(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A032",
-                    String.valueOf(wifiManager.is5GHzBandSupported()));
-        } else {
-            accumulator.addToUnavailableParams("A032", RE04);
-        }
+        accumulator.addToDeviceData("A032",
+                String.valueOf(wifiManager.is5GHzBandSupported()));
     }
 
     private static void addA033(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT < 21) {
-            accumulator.addToUnavailableParams("A033", RE04);
-        } else if (Build.VERSION.SDK_INT < 29) {
+        if (Build.VERSION.SDK_INT < 29) {
             accumulator.addToDeviceData("A033",
                     String.valueOf(wifiManager.isDeviceToApRttSupported()));
         } else {
@@ -125,29 +124,17 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA034(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A034",
-                    String.valueOf(wifiManager.isEnhancedPowerReportingSupported()));
-        } else {
-            accumulator.addToUnavailableParams("A034", RE04);
-        }
+        accumulator.addToDeviceData("A034",
+                String.valueOf(wifiManager.isEnhancedPowerReportingSupported()));
     }
 
     private static void addA035(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A035", String.valueOf(wifiManager.isP2pSupported()));
-        } else {
-            accumulator.addToUnavailableParams("A035", RE04);
-        }
+        accumulator.addToDeviceData("A035", String.valueOf(wifiManager.isP2pSupported()));
     }
 
     private static void addA036(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A036",
-                    String.valueOf(wifiManager.isPreferredNetworkOffloadSupported()));
-        } else {
-            accumulator.addToUnavailableParams("A036", RE04);
-        }
+        accumulator.addToDeviceData("A036",
+                String.valueOf(wifiManager.isPreferredNetworkOffloadSupported()));
     }
 
     private static void addA037(ParamAccumulator accumulator, WifiManager wifiManager) {
@@ -160,11 +147,7 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA038(ParamAccumulator accumulator, WifiManager wifiManager) {
-        if (Build.VERSION.SDK_INT >= 21) {
-            accumulator.addToDeviceData("A038", String.valueOf(wifiManager.isTdlsSupported()));
-        } else {
-            accumulator.addToUnavailableParams("A038", RE04);
-        }
+        accumulator.addToDeviceData("A038", String.valueOf(wifiManager.isTdlsSupported()));
     }
 
     private static void addA146(ParamAccumulator accumulator, WifiManager wifiManager) {
@@ -177,8 +160,8 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA147(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A147", RE03);
             return;
         }
@@ -191,8 +174,8 @@ final class WifiParamCollector extends ParamCollector {
     }
 
     private static void addA148(ParamAccumulator accumulator, WifiInfo wifiInfo,
-                                boolean canAccessNetworkState) {
-        if (!canAccessNetworkState) {
+                                boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
             accumulator.addToUnavailableParams("A148", RE03);
             return;
         }
@@ -206,20 +189,21 @@ final class WifiParamCollector extends ParamCollector {
 
     private static boolean hasWifiInfoPermissions(ParamAccumulator accumulator) {
         if (Build.VERSION.SDK_INT < 31) {
-            return true;
+            return hasAllPermissions(List.of(ACCESS_WIFI_STATE, ACCESS_FINE_LOCATION),
+                    accumulator.getContext());
         } else {
             return hasPermission(ACCESS_NETWORK_STATE, accumulator.getContext());
         }
     }
 
     private static WifiInfo getWifiInfo(ParamAccumulator accumulator, WifiManager wifiManager,
-                                        boolean canAccessNetworkState) {
-        if (Build.VERSION.SDK_INT < 31) {
-            return wifiManager.getConnectionInfo();
+                                        boolean hasWifiInfoPermissions) {
+        if (!hasWifiInfoPermissions) {
+            return null;
         }
 
-        if (!canAccessNetworkState) {
-            return null;
+        if (Build.VERSION.SDK_INT < 31) {
+            return wifiManager.getConnectionInfo();
         }
 
         ConnectivityManager connectivityManager = (ConnectivityManager)

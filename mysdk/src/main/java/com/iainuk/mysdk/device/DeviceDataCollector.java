@@ -12,23 +12,20 @@ import static com.iainuk.mysdk.device.SystemSettingsParamCollector.addSystemSett
 import static com.iainuk.mysdk.device.TelephonyParamCollector.addTelephonyManagerFields;
 import static com.iainuk.mysdk.device.WifiParamCollector.addWifiManagerFields;
 
-import android.content.Context;
 import android.os.Environment;
 import android.os.StatFs;
 import android.webkit.WebSettings;
 
+import com.iainuk.mysdk.exception.SDKRuntimeException;
+
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 
-public class DeviceInfoCollector {
-    public static JSONObject collectDeviceInfo(Context context, HashSet<String> blacklist) {
-        ParamAccumulator accumulator = new ParamAccumulator(context, blacklist,
-                new HashMap<>(), new HashMap<>());
+public class DeviceDataCollector {
+    private final static String DATA_VERSION = "1.5";
 
+    public static String collectDeviceData(ParamAccumulator accumulator) {
         addCommonFields(accumulator);
         addTelephonyManagerFields(accumulator);
         addWifiManagerFields(accumulator);
@@ -45,7 +42,7 @@ public class DeviceInfoCollector {
         addA136(accumulator);
         addA137(accumulator);
 
-        return new JSONObject();
+        return createDeviceDataObject(accumulator).toString();
     }
 
     /////////////////////////////////////////////////////
@@ -57,7 +54,7 @@ public class DeviceInfoCollector {
     }
 
     private static void addA130(ParamAccumulator accumulator) {
-        accumulator.addToDeviceData("A130", Arrays.toString(Locale.getAvailableLocales()));
+        accumulator.addToDeviceData("A130", String.valueOf(Locale.getAvailableLocales().length));
     }
 
     private static void addA136(ParamAccumulator accumulator) {
@@ -68,5 +65,16 @@ public class DeviceInfoCollector {
     private static void addA137(ParamAccumulator accumulator) {
         accumulator.addToDeviceData("A137",
                 WebSettings.getDefaultUserAgent(accumulator.getContext()));
+    }
+
+    private static JSONObject createDeviceDataObject(ParamAccumulator accumulator) {
+        try {
+            return new JSONObject()
+                    .put("DV", DATA_VERSION)
+                    .put("DD", new JSONObject(accumulator.getDeviceData()))
+                    .put("DPNA", new JSONObject(accumulator.getUnavailableParams()));
+        } catch (Exception e) {
+            throw new SDKRuntimeException("Could not create device info object", "101", e);
+        }
     }
 }

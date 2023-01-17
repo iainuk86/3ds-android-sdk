@@ -5,23 +5,24 @@ import static com.iainuk.mysdk.device.DPNAEnum.RE04;
 import android.content.Context;
 import android.text.TextUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class ParamAccumulator {
+public final class ParamAccumulator {
     private String sdkAppId;
     private final Context context;
-    private final HashSet<String> blacklist;
-    private final HashMap<String, String> deviceData;
-    private final HashMap<String, String> deviceParamNotAvailable;
+    private final Set<String> blacklist;
+    private final Map<String, String> deviceData;
+    private final Map<String, String> unavailableParams;
 
-    public ParamAccumulator(Context context, HashSet<String> blacklist,
-                            HashMap<String, String> deviceData,
-                            HashMap<String, String> deviceParamNotAvailable) {
+    public ParamAccumulator(Context context,
+                            Set<String> blacklist,
+                            Map<String, String> deviceData,
+                            Map<String, String> unavailableParams) {
         this.context = context;
         this.blacklist = blacklist;
         this.deviceData = deviceData;
-        this.deviceParamNotAvailable = deviceParamNotAvailable;
+        this.unavailableParams = unavailableParams;
     }
 
     public String getSdkAppId() {
@@ -36,12 +37,12 @@ public class ParamAccumulator {
         return context;
     }
 
-    public HashMap<String, String> getDeviceData() {
+    public Map<String, String> getDeviceData() {
         return deviceData;
     }
 
-    public HashMap<String, String> getDeviceParamNotAvailable() {
-        return deviceParamNotAvailable;
+    public Map<String, String> getUnavailableParams() {
+        return unavailableParams;
     }
 
     public void addToDeviceData(String deviceParameter, String result) {
@@ -57,6 +58,6 @@ public class ParamAccumulator {
     }
 
     public void addToUnavailableParams(String deviceParameter, DPNAEnum reason) {
-        deviceParamNotAvailable.put(deviceParameter, reason.name());
+        unavailableParams.put(deviceParameter, reason.name());
     }
 }

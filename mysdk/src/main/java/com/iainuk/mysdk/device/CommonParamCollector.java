@@ -3,6 +3,7 @@ package com.iainuk.mysdk.device;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
+import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static android.Manifest.permission.BLUETOOTH;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.content.Context.CONNECTIVITY_SERVICE;
@@ -98,10 +99,10 @@ final class CommonParamCollector extends ParamCollector {
     }
 
     private static void addC010(ParamAccumulator accumulator) {
-        if (Build.VERSION.SDK_INT >= 30) {
-            accumulator.addToDeviceData("C010", getIpAddressFromApi30(accumulator));
+        if (Build.VERSION.SDK_INT >= 23) {
+            accumulator.addToDeviceData("C010", getIpAddressFromApi23(accumulator));
         } else {
-            accumulator.addToDeviceData("C010", getIpAddressBeforeApi30(accumulator));
+            accumulator.addToDeviceData("C010", getIpAddressBeforeApi23(accumulator));
         }
     }
 
@@ -127,8 +128,7 @@ final class CommonParamCollector extends ParamCollector {
     }
 
     private static void addC014(ParamAccumulator accumulator) {
-        // Also needs to be in AuthenticationRequestParameters
-        accumulator.addToDeviceData("C014", accumulator.getContext().getPackageName());
+        accumulator.addToDeviceData("C014", accumulator.getSdkAppId());
     }
 
     private static void addC015(ParamAccumulator accumulator) {
@@ -154,11 +154,12 @@ final class CommonParamCollector extends ParamCollector {
             entry(29, "Q"),
             entry(30, "R"),
             entry(31, "S"),
-            entry(32, "S_V2"));
+            entry(32, "S_V2"),
+            entry(33, "TIRAMISU"));
     }
 
     @SuppressLint("NewApi")
-    private static String getIpAddressFromApi30(ParamAccumulator accumulator) {
+    private static String getIpAddressFromApi23(ParamAccumulator accumulator) {
         if (!hasPermission(ACCESS_NETWORK_STATE, accumulator.getContext())) {
             accumulator.addToUnavailableParams("C010", RE03);
             return null;
@@ -180,7 +181,13 @@ final class CommonParamCollector extends ParamCollector {
         return null;
     }
 
-    private static String getIpAddressBeforeApi30(ParamAccumulator accumulator) {
+    private static String getIpAddressBeforeApi23(ParamAccumulator accumulator) {
+        if (!hasAllPermissions(List.of(ACCESS_WIFI_STATE, ACCESS_FINE_LOCATION),
+                accumulator.getContext())) {
+            accumulator.addToUnavailableParams("C010", RE03);
+            return null;
+        }
+
         WifiManager wifiManager = (WifiManager)
                 accumulator.getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
         int ip = wifiManager.getConnectionInfo().getIpAddress();
